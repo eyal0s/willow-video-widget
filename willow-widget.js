@@ -1,10 +1,3 @@
-/*!
- * Willow — Meet Willow Video Bubble
- * Drop this file on a CDN and load it from Webflow with:
- *   <script src="https://your-cdn/willow-widget.js" defer></script>
- *
- * Tweak the CONFIG block below to change video sources, copy, position, size.
- */
 (function () {
   if (window.__willowWidgetLoaded) return;
   window.__willowWidgetLoaded = true;
