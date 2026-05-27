@@ -147,7 +147,6 @@
     background: var(--willow-ink);
     border: 2px solid var(--willow-cream);
     color: #fff;
-    font-size: 12px; line-height: 1;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     padding: 0;
@@ -256,7 +255,7 @@
       <div class="willow-bubble__play" aria-hidden="true">
         <svg viewBox="0 0 12 12"><path d="M2 1.2v9.6L11 6z"/></svg>
       </div>
-      <button class="willow-bubble__close" id="willowClose" aria-label="Dismiss">×</button>
+      <button class="willow-bubble__close" id="willowClose" aria-label="Dismiss"><svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg></button>
     </div>
   </div>
   <div class="willow-lightbox" id="willowLightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Meet Willow video">
