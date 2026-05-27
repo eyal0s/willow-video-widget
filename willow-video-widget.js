@@ -6,6 +6,7 @@
   var CONFIG = {
     youtubeId: '7xtJqSdP7ak',
     bubbleMp4: 'https://res.cloudinary.com/dyvjgm447/video/upload/q_auto,f_mp4,vc_h264:baseline/v1779873685/willow-loop-bubble_uho4mq.mp4',
+    bubblePoster: 'https://cdn.prod.website-files.com/69ca7b2d416aeff5210dbb8b/6a16c526a165e032d98b7973_CapCut%202026-05-27%2013.17.06.png',
     ctaText: 'Meet Willow 👋',
     ariaLabel: 'Watch: Meet Willow',
     bubbleSize: '96px',          // desktop bubble diameter
@@ -99,7 +100,8 @@
     overflow: hidden;
     position: relative;
   }
-  .willow-bubble__media video {
+  .willow-bubble__media video,
+  .willow-bubble__media img {
     width: 100%; height: 100%;
     object-fit: cover; display: block;
   }
@@ -241,9 +243,10 @@
     </div>
     <div class="willow-bubble" id="willowBubble" role="button" tabindex="0" aria-label="${CONFIG.ariaLabel}">
       <div class="willow-bubble__media">
-        <video id="willowThumb" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true">
+        <video id="willowThumb" autoplay muted loop playsinline webkit-playsinline preload="auto" poster="${CONFIG.bubblePoster}" aria-hidden="true">
           <source src="${CONFIG.bubbleMp4}" type="video/mp4">
         </video>
+        <img id="willowFallback" src="${CONFIG.bubblePoster}" alt="" aria-hidden="true" style="display:none;">
       </div>
       <div class="willow-bubble__play" aria-hidden="true">
         <svg viewBox="0 0 12 12"><path d="M2 1.2v9.6L11 6z"/></svg>
@@ -288,6 +291,8 @@
     var iframe = document.getElementById('willowYouTube');
     var lightboxClose = document.getElementById('willowLightboxClose');
 
+    var fallbackImg = document.getElementById('willowFallback');
+
     thumb.muted = true;
     thumb.defaultMuted = true;
     thumb.playsInline = true;
@@ -297,8 +302,17 @@
     thumb.load();
 
     var playing = false;
+    var fell = false;
+
+    function showFallback() {
+      if (fell) return;
+      fell = true;
+      thumb.style.display = 'none';
+      fallbackImg.style.display = 'block';
+    }
+
     var tryPlay = function () {
-      if (playing) return;
+      if (playing || fell) return;
       var p = thumb.play();
       if (p && typeof p.then === 'function') {
         p.then(function () { playing = true; }).catch(function () {});
@@ -309,20 +323,10 @@
     thumb.addEventListener('loadeddata', tryPlay, { once: true });
     if (thumb.readyState >= 2) tryPlay();
 
-    // iOS Safari sometimes needs a nudge after a short delay
     setTimeout(tryPlay, 500);
-    setTimeout(tryPlay, 2000);
-
-    // Last resort: play on first user interaction (touch/scroll)
-    var interactionPlay = function () {
-      tryPlay();
-      if (playing) {
-        document.removeEventListener('touchstart', interactionPlay);
-        document.removeEventListener('scroll', interactionPlay);
-      }
-    };
-    document.addEventListener('touchstart', interactionPlay, { once: true, passive: true });
-    document.addEventListener('scroll', interactionPlay, { once: true, passive: true });
+    setTimeout(function () {
+      if (!playing) showFallback();
+    }, 2500);
 
     function openLightbox() {
       lightbox.classList.add('willow-open');

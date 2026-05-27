@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Willow Widget Preview</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 200vh;
+      background: #f5f1ea;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+      color: #1f2a24;
+    }
+    .demo {
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 0 24px;
+    }
+    h1 { font-size: 28px; }
+    p { line-height: 1.6; color: #555; }
+    .btn {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 12px 24px;
+      background: #4f7a3d;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn:hover { background: #3f6330; }
+  </style>
+</head>
+<body>
+  <div class="demo">
+    <h1>Willow Widget Preview</h1>
+    <p>The widget is in the bottom-right corner.</p>
+    <p><strong>Simulate broken video:</strong> Click the button below, then reload the page. The video src will be replaced with a broken URL so the fallback image kicks in after 2.5s.</p>
+    <button class="btn" id="toggleBtn"></button>
+    <p id="status" style="margin-top: 12px; font-size: 14px;"></p>
+  </div>
+
+  <script>
+    var BREAK_KEY = '__willow_break_video';
+    var broken = localStorage.getItem(BREAK_KEY) === '1';
+
+    document.getElementById('toggleBtn').textContent = broken
+      ? '✅ Broken video ON — click to restore & reload'
+      : '🔴 Click to break video src & reload';
+    document.getElementById('status').textContent = broken
+      ? 'Video src is broken. The fallback image should appear after ~2.5s.'
+      : 'Video is loading normally.';
+
+    document.getElementById('toggleBtn').addEventListener('click', function () {
+      if (broken) {
+        localStorage.removeItem(BREAK_KEY);
+      } else {
+        localStorage.setItem(BREAK_KEY, '1');
+      }
+      location.reload();
+    });
+
+    if (broken) {
+      // Monkey-patch the config before the widget loads
+      var origCreateElement = document.createElement.bind(document);
+      var realAppendChild = Node.prototype.appendChild;
+      // Intercept the video element after widget mounts and break its src
+      var observer = new MutationObserver(function (mutations) {
+        var vid = document.getElementById('willowThumb');
+        if (vid) {
+          observer.disconnect();
+          vid.pause();
+          vid.removeAttribute('autoplay');
+          vid.src = '';
+          var sources = vid.querySelectorAll('source');
+          sources.forEach(function (s) { s.src = 'https://broken.invalid/nope.mp4'; });
+          vid.load();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  </script>
+  <script src="willow-video-widget.js"></script>
+</body>
+</html>
