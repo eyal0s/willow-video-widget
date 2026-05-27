@@ -271,7 +271,11 @@
   </div>
   `;
 
+  var DISMISSED_KEY = 'willow_widget_dismissed';
+
   function mount() {
+    try { if (sessionStorage.getItem(DISMISSED_KEY)) return; } catch (_) {}
+
     var style = document.createElement('style');
     style.textContent = CSS;
     document.head.appendChild(style);
@@ -291,6 +295,10 @@
     var lightbox = document.getElementById('willowLightbox');
     var iframe = document.getElementById('willowYouTube');
     var lightboxClose = document.getElementById('willowLightboxClose');
+
+    thumb.muted = true;
+    thumb.playsInline = true;
+    thumb.setAttribute('preload', 'auto');
 
     var tryPlay = function () {
       var p = thumb.play();
@@ -331,6 +339,7 @@
       e.stopPropagation();
       wrap.classList.add('willow-hidden');
       thumb.pause();
+      try { sessionStorage.setItem(DISMISSED_KEY, '1'); } catch (_) {}
     });
 
     lightbox.addEventListener('click', function (e) {
