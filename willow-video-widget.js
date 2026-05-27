@@ -5,7 +5,7 @@
   // ====================== CONFIG ======================
   var CONFIG = {
     youtubeId: '7xtJqSdP7ak',
-    bubbleMp4: 'https://res.cloudinary.com/dyvjgm447/video/upload/q_auto/f_auto/v1779873685/willow-loop-bubble_uho4mq.mp4',
+    bubbleMp4: 'https://res.cloudinary.com/dyvjgm447/video/upload/q_auto,f_mp4,vc_h264:baseline/v1779873685/willow-loop-bubble_uho4mq.mp4',
     ctaText: 'Meet Willow 👋',
     ariaLabel: 'Watch: Meet Willow',
     bubbleSize: '96px',          // desktop bubble diameter
@@ -241,7 +241,7 @@
     </div>
     <div class="willow-bubble" id="willowBubble" role="button" tabindex="0" aria-label="${CONFIG.ariaLabel}">
       <div class="willow-bubble__media">
-        <video id="willowThumb" muted loop playsinline preload="metadata" aria-hidden="true">
+        <video id="willowThumb" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true">
           <source src="${CONFIG.bubbleMp4}" type="video/mp4">
         </video>
       </div>
@@ -289,15 +289,40 @@
     var lightboxClose = document.getElementById('willowLightboxClose');
 
     thumb.muted = true;
+    thumb.defaultMuted = true;
     thumb.playsInline = true;
+    thumb.setAttribute('webkit-playsinline', '');
     thumb.setAttribute('preload', 'auto');
+    thumb.volume = 0;
+    thumb.load();
 
+    var playing = false;
     var tryPlay = function () {
+      if (playing) return;
       var p = thumb.play();
-      if (p && typeof p.catch === 'function') p.catch(function () {});
+      if (p && typeof p.then === 'function') {
+        p.then(function () { playing = true; }).catch(function () {});
+      }
     };
+
+    thumb.addEventListener('canplay', tryPlay, { once: true });
+    thumb.addEventListener('loadeddata', tryPlay, { once: true });
     if (thumb.readyState >= 2) tryPlay();
-    else thumb.addEventListener('loadeddata', tryPlay, { once: true });
+
+    // iOS Safari sometimes needs a nudge after a short delay
+    setTimeout(tryPlay, 500);
+    setTimeout(tryPlay, 2000);
+
+    // Last resort: play on first user interaction (touch/scroll)
+    var interactionPlay = function () {
+      tryPlay();
+      if (playing) {
+        document.removeEventListener('touchstart', interactionPlay);
+        document.removeEventListener('scroll', interactionPlay);
+      }
+    };
+    document.addEventListener('touchstart', interactionPlay, { once: true, passive: true });
+    document.addEventListener('scroll', interactionPlay, { once: true, passive: true });
 
     function openLightbox() {
       lightbox.classList.add('willow-open');
